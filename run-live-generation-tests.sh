@@ -11,6 +11,9 @@ mpv_bin=$1
 extra_dylib=${2-}
 mpv_source=${3-$(CDPATH= cd -- "$(dirname -- "$mpv_bin")/.." && pwd)}
 fixtures="$script_dir/../ffmpeg-mov-packet-lab/fixtures"
+if [ ! -d "$fixtures" ]; then
+  fixtures="$script_dir/../ynotv/experiments/ffmpeg-mov-packet-lab/fixtures"
+fi
 results="$script_dir/results"
 live_fixture="$script_dir/fixture.rdp"
 generation_fixture="$script_dir/generation-fixture.rdp"

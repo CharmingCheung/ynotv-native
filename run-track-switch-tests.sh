@@ -11,6 +11,12 @@ mpv=$1
 extra=${2:-}
 fflab="$here/../ffmpeg-mov-packet-lab"
 cenc="$here/../clearkey-cenc-packet-transform"
+if [ ! -d "$fflab" ]; then
+  fflab="$here/../ynotv/experiments/ffmpeg-mov-packet-lab"
+fi
+if [ ! -d "$cenc" ]; then
+  cenc="$here/../ynotv/experiments/clearkey-cenc-packet-transform"
+fi
 results="$here/results/c8"
 mkdir -p "$results"
 

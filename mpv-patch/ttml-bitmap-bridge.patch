@@ -30,9 +30,7 @@ index b71a34e49b..a2847babc5 100644
  struct sd_ass_priv {
      struct ass_library *ass_library;
      struct ass_renderer *ass_renderer;
-@@ -63,6 +72,13 @@ struct sd_ass_priv {
-     int *packets_animated;
-     int num_packets_animated;
+@@ -63,4 +72,11 @@ struct sd_ass_priv {
      bool check_animated;
 +    struct ttml_bitmap *ttml_bitmaps;
 +    int num_ttml_bitmaps;

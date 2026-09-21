@@ -34,6 +34,8 @@ index 669315e12..7037cf90c 100644
 +    // The callback must not call back into the demux core.
 +    void (*interrupt)(struct demuxer *demuxer);
      void (*drop_buffers)(struct demuxer *demuxer);
+     // Optional. Re-queue retained sticky packets (DVD menu subpicture).
+     void (*nav_refresh)(struct demuxer *demuxer);
      void (*close)(struct demuxer *demuxer);
      void (*seek)(struct demuxer *demuxer, double rel_seek_secs, int flags);
      void (*switched_tracks)(struct demuxer *demuxer);

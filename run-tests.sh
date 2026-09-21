@@ -10,6 +10,9 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 mpv_bin=$1
 extra_dylib=${2-}
 fixture_source="$script_dir/../ffmpeg-mov-packet-lab/fixtures/clear-av-full.mp4"
+if [ ! -f "$fixture_source" ]; then
+  fixture_source="$script_dir/../ynotv/experiments/ffmpeg-mov-packet-lab/fixtures/clear-av-full.mp4"
+fi
 fixture="$script_dir/fixture.rdp"
 regression_fixture="$script_dir/regression-fixture.rdp"
 results="$script_dir/results"

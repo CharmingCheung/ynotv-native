@@ -5,7 +5,7 @@ repo=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 version=${1:-dev}
 incremental=${YNOTV_NATIVE_INCREMENTAL:-0}
 skip_archive=${YNOTV_NATIVE_SKIP_ARCHIVE:-0}
-mpv_commit=cfd818bcaef262f82596f49444ee80073fa6d49a
+mpv_commit=e76a35ec95b27f5cf2d27b043b5e2e0d90e468ae
 libplacebo_commit=cee9b076f2c63104ccfd497fa79c39a867293ec4
 
 if [ "$(uname -s)" != Darwin ] || [ "$(uname -m)" != arm64 ]; then

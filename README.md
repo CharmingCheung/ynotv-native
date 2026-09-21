@@ -8,7 +8,7 @@ versioned runtime artifacts consumed by `pnpm dev`.
 
 ## Pinned sources
 
-- mpv: `cfd818bcaef262f82596f49444ee80073fa6d49a`
+- mpv: `e76a35ec95b27f5cf2d27b043b5e2e0d90e468ae`
 - libplacebo: `cee9b076f2c63104ccfd497fa79c39a867293ec4` (`v7.360.1`)
 - packet ABI: current live/DVR stream `RDPKT006`; older revisions are retained
   only by regression fixtures
@@ -93,8 +93,8 @@ fixture suites against the build tree when modifying the protocol:
 ```
 
 The extended fixture suites expect the generated C1 media corpus beside this
-checkout and are maintainer tests; the release workflow always runs mpv's 39
-Meson tests plus ABI marker and install-name validation.
+checkout and are maintainer tests; the release workflow always runs mpv's full
+Meson test suite plus ABI marker and install-name validation.
 
 ## License
 
