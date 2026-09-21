@@ -56,6 +56,13 @@ jobs:
             mingw-w64-ucrt-x86_64-vulkan-loader
             mingw-w64-ucrt-x86_64-tools
             mingw-w64-ucrt-x86_64-llvm-tools
+      - name: Verify FFmpeg development files
+        shell: msys2 {0}
+        run: |
+          if ! pkg-config --exists libavcodec libavformat libavutil; then
+            pacman --noconfirm -S --overwrite '*' mingw-w64-ucrt-x86_64-ffmpeg
+          fi
+          pkg-config --print-errors --exists libavcodec libavformat libavutil
       - name: Build relocatable runtime
         shell: msys2 {0}
         run: ./scripts/build-windows.sh "${{ steps.version.outputs.version }}"
