@@ -28,16 +28,72 @@ jobs:
             dist/*.tar.gz
             dist/*.sha256
           if-no-files-found: error
+  windows-x64:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: CharmingCheung/ynotv-fork
+          ref: custom_dev
+          path: ynotv-app
+      - name: Read release version
+        id: version
+        shell: bash
+        run: echo "version=$(tr -d '[:space:]' < VERSION)" >> "$GITHUB_OUTPUT"
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            git
+            p7zip
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-meson
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-ffmpeg
+            mingw-w64-ucrt-x86_64-libplacebo
+            mingw-w64-ucrt-x86_64-openssl
+            mingw-w64-ucrt-x86_64-vulkan-headers
+            mingw-w64-ucrt-x86_64-vulkan-loader
+            mingw-w64-ucrt-x86_64-tools
+            mingw-w64-ucrt-x86_64-llvm-tools
+      - name: Build relocatable runtime
+        shell: msys2 {0}
+        run: ./scripts/build-windows.sh "${{ steps.version.outputs.version }}" "$(cygpath -u "$GITHUB_WORKSPACE")/ynotv-app"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ynotv-native-windows-x64
+          path: |
+            dist/*.zip
+            dist/*.sha256
+          if-no-files-found: error
+
+  publish:
+    if: github.ref == 'refs/heads/master'
+    needs: [macos-arm64, windows-x64]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
       - name: Publish versioned release
-        if: github.ref == 'refs/heads/master'
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_VERSION: ${{ steps.version.outputs.version }}
         run: |
-          if gh release view "$RELEASE_VERSION" >/dev/null 2>&1; then
-            echo "Release $RELEASE_VERSION already exists; keeping immutable assets unchanged."
-            exit 0
+          version=$(tr -d '[:space:]' < VERSION)
+          if ! gh release view "$version" >/dev/null 2>&1; then
+            gh release create "$version" --target "$GITHUB_SHA" --generate-notes
           fi
-          gh release create "$RELEASE_VERSION" \
-            dist/*.tar.gz dist/*.sha256 \
-            --target "$GITHUB_SHA" --generate-notes
+          existing=$(gh release view "$version" --json assets --jq '.assets[].name')
+          for file in dist/*; do
+            name=$(basename "$file")
+            if grep -Fxq "$name" <<<"$existing"; then
+              echo "$name already exists; keeping immutable asset unchanged."
+            else
+              gh release upload "$version" "$file"
+            fi
+          done

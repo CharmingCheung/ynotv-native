@@ -20,21 +20,44 @@ consumers do not need this repository or a temporary build tree. Other codec
 libraries remain normal Homebrew development prerequisites; production DMG
 relocation is deliberately handled separately.
 
+The Windows x64 artifact contains the patched `libmpv-2.dll`, an MSVC import
+library, the ClearKey packet producer, and their non-system UCRT64 DLL closure.
+The application can therefore use Native DASH without an MSYS2 installation at
+runtime.
+
 ## Build locally on Apple Silicon
 
 ```sh
 brew install mpv meson ninja pkg-config
-./scripts/build-macos.sh v0.1.0
+./scripts/build-macos.sh v0.2.0
 ```
 
 Outputs are written to `dist/`:
 
-- `ynotv-native-macos-arm64-v0.1.0.tar.gz`
-- `ynotv-native-macos-arm64-v0.1.0.tar.gz.sha256`
+- `ynotv-native-macos-arm64-v0.2.0.tar.gz`
+- `ynotv-native-macos-arm64-v0.2.0.tar.gz.sha256`
 
 The build validates the architecture, rejects temporary/build-machine paths,
 checks the `RDPKT006` and `YNOIMSC1` feature markers, and runs mpv's Meson test
 suite.
+
+## Build locally on Windows x64
+
+Install MSYS2 at `C:\msys64` and the UCRT64 packages listed in
+`.github/workflows/build-release.yml`. Keep the ynoTV checkout beside this
+repository, then run from PowerShell:
+
+```powershell
+.\scripts\dev-windows.ps1 ..\ynotv
+```
+
+For a distributable archive, run the following in an MSYS2 UCRT64 shell:
+
+```sh
+./scripts/build-windows.sh v0.2.0 ../ynotv
+```
+
+This produces `ynotv-native-windows-x64-v0.2.0.zip` and its SHA-256 file.
 
 ## Iterate on the patch locally
 
@@ -59,16 +82,16 @@ working-tree patch, reuses the pinned libplacebo and Meson object cache,
 recompiles changed native objects, runs the test suite, and installs the result
 directly into ynoTV's gitignored runtime cache. No GitHub push, Release, manual
 path, or download round-trip is involved. The running application must be
-restarted because an already loaded dylib cannot be replaced in-process.
+restarted because an already loaded native library cannot be replaced in-process.
 
 Use the release workflow only after the local patch and real playback tests are
 stable. Then increment `VERSION`, commit, and push `master`.
 
 ## Publish a release
 
-`VERSION` is the single release version source. A push to `master` builds the
-artifact and, if that version does not already have a Release, creates the tag
-and Release and attaches the archive and checksum. The ynoTV repository pins
+`VERSION` is the single release version source. A push to `master` builds macOS
+and Windows independently, then a publish job creates the Release if needed and
+uploads each missing platform archive and checksum. The ynoTV repository pins
 both the version and asset name; changing the native ABI requires incrementing
 `VERSION` and explicitly updating the consumer.
 
