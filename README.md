@@ -36,6 +36,34 @@ The build validates the architecture, rejects temporary/build-machine paths,
 checks the `RDPKT006` and `YNOIMSC1` feature markers, and runs mpv's Meson test
 suite.
 
+## Iterate on the patch locally
+
+Keep this repository next to the application checkout:
+
+```text
+IdeaProjects/
+├── ynotv/
+└── ynotv-native/
+```
+
+For repeated patch work, do not push a release for every attempt. Edit files in
+`mpv-patch/`, then run this command from the ynoTV repository:
+
+```sh
+pnpm native:dev
+pnpm dev:clean
+```
+
+`native:dev` resets only the generated pinned mpv checkout, reapplies the
+working-tree patch, reuses the pinned libplacebo and Meson object cache,
+recompiles changed native objects, runs the test suite, and installs the result
+directly into ynoTV's gitignored runtime cache. No GitHub push, Release, manual
+path, or download round-trip is involved. The running application must be
+restarted because an already loaded dylib cannot be replaced in-process.
+
+Use the release workflow only after the local patch and real playback tests are
+stable. Then increment `VERSION`, commit, and push `master`.
+
 ## Publish a release
 
 `VERSION` is the single release version source. A push to `master` builds the
