@@ -38,17 +38,18 @@ suite.
 
 ## Publish a release
 
-Push a semantic version tag such as `v0.1.0`. GitHub Actions builds the same
-artifact and attaches it and its checksum to that release. The ynoTV repository
-pins both the tag and asset name; changing the native ABI requires a new tag and
-an explicit consumer update.
+`VERSION` is the single release version source. A push to `master` builds the
+artifact and, if that version does not already have a Release, creates the tag
+and Release and attaches the archive and checksum. The ynoTV repository pins
+both the version and asset name; changing the native ABI requires incrementing
+`VERSION` and explicitly updating the consumer.
 
 ```sh
-git tag v0.1.0
-git push origin master --tags
+git push origin master
 ```
 
-Do not replace an existing versioned release asset. Create a new tag instead.
+Published assets are immutable. If a Release already exists, the workflow does
+not replace it; increment `VERSION` for the next release.
 
 ## Patch maintenance
 

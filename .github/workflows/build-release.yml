@@ -3,8 +3,8 @@ name: Build native runtime
 on:
   workflow_dispatch:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - master
 
 permissions:
   contents: write
@@ -14,10 +14,13 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - name: Read release version
+        id: version
+        run: echo "version=$(tr -d '[:space:]' < VERSION)" >> "$GITHUB_OUTPUT"
       - name: Install build dependencies
         run: brew install mpv meson ninja pkg-config
       - name: Build relocatable runtime
-        run: ./scripts/build-macos.sh "${GITHUB_REF_NAME:-dev}"
+        run: ./scripts/build-macos.sh "${{ steps.version.outputs.version }}"
       - uses: actions/upload-artifact@v4
         with:
           name: ynotv-native-macos-arm64
@@ -26,10 +29,15 @@ jobs:
             dist/*.sha256
           if-no-files-found: error
       - name: Publish versioned release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.ref == 'refs/heads/master'
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
+          if gh release view "$RELEASE_VERSION" >/dev/null 2>&1; then
+            echo "Release $RELEASE_VERSION already exists; keeping immutable assets unchanged."
+            exit 0
+          fi
+          gh release create "$RELEASE_VERSION" \
             dist/*.tar.gz dist/*.sha256 \
-            --verify-tag --generate-notes
+            --target "$GITHUB_SHA" --generate-notes
