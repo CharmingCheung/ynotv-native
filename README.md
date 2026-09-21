@@ -14,14 +14,16 @@ versioned runtime artifacts consumed by `pnpm dev`.
   only by regression fixtures
 
 The macOS development artifact contains `libmpv.2.dylib`, its standard
-`libmpv.dylib` linker symlink, and the exact pinned `libplacebo.360.dylib`.
+`libmpv.dylib` linker symlink, the ClearKey packet producer, and the exact
+pinned `libplacebo.360.dylib`.
 Their mutual install names are rewritten relative to `@loader_path`, so
 consumers do not need this repository or a temporary build tree. Other codec
 libraries remain normal Homebrew development prerequisites; production DMG
 relocation is deliberately handled separately.
 
 The Windows x64 artifact contains the patched `libmpv-2.dll`, an MSVC import
-library, the ClearKey packet producer, and their non-system UCRT64 DLL closure.
+library, the ClearKey packet producer built from this repository's
+`packet-producer/` sources, and their non-system UCRT64 DLL closure.
 The application can therefore use Native DASH without an MSYS2 installation at
 runtime.
 
@@ -54,7 +56,7 @@ repository, then run from PowerShell:
 For a distributable archive, run the following in an MSYS2 UCRT64 shell:
 
 ```sh
-./scripts/build-windows.sh v0.2.0 ../ynotv
+./scripts/build-windows.sh v0.2.0
 ```
 
 This produces `ynotv-native-windows-x64-v0.2.0.zip` and its SHA-256 file.

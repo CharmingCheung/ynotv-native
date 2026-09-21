@@ -85,10 +85,18 @@ fi
 meson compile -C "$mpv_build"
 meson test -C "$mpv_build" --print-errorlogs
 
+producer_dir="$repo/packet-producer"
+cc -std=c11 -O2 -Wall -Wextra -Wpedantic -Werror \
+  $(pkg-config --cflags libavformat libavcodec libavutil openssl) \
+  "$producer_dir/cenc_transform.c" "$producer_dir/cenc_component_producer.c" \
+  -o "$work/cenc_component_producer" \
+  $(pkg-config --libs libavformat libavcodec libavutil openssl)
+
 rm -rf "$stage"
 mkdir -p "$stage"
 cp "$mpv_build/libmpv.2.dylib" "$stage/libmpv.2.dylib"
 cp "$prefix/lib/libplacebo.360.dylib" "$stage/libplacebo.360.dylib"
+cp "$work/cenc_component_producer" "$stage/cenc_component_producer"
 placebo_link=$(otool -L "$stage/libmpv.2.dylib" | awk '/libplacebo\.360\.dylib/{print $1; exit}')
 if [ -z "$placebo_link" ]; then
   echo "libmpv does not link the pinned libplacebo" >&2
@@ -119,6 +127,7 @@ cat > "$stage/manifest.json" <<EOF
   "platform": "macos-arm64",
   "mpvCommit": "$mpv_commit",
   "libplaceboCommit": "$libplacebo_commit",
+  "producerSourceSha256": "$(shasum -a 256 "$producer_dir"/* "$repo/rustdash_packet_abi.h" | shasum -a 256 | awk '{print $1}')",
   "packetAbi": "RDPKT006",
   "subtitleBitmapAbi": "YNOIMSC1",
   "requiresHomebrew": true

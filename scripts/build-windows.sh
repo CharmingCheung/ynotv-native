@@ -3,7 +3,6 @@ set -euo pipefail
 
 repo=$(cd "$(dirname "$0")/.." && pwd)
 version=${1:-dev}
-app_repo=${2:-"$repo/../ynotv"}
 incremental=${YNOTV_NATIVE_INCREMENTAL:-0}
 skip_archive=${YNOTV_NATIVE_SKIP_ARCHIVE:-0}
 mpv_commit=e76a35ec95b27f5cf2d27b043b5e2e0d90e468ae
@@ -12,11 +11,6 @@ case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) ;; *) echo "build-windows.sh require
 for command in git meson ninja pkg-config cc llvm-dlltool gendef ldd 7z; do
   command -v "$command" >/dev/null 2>&1 || { echo "missing build tool: $command" >&2; exit 1; }
 done
-if [ ! -f "$app_repo/experiments/clearkey-cenc-packet-transform/cenc_component_producer.c" ]; then
-  echo "not a ynoTV application checkout: $app_repo" >&2
-  exit 1
-fi
-
 work="$repo/.work/windows"
 dist="$repo/dist"
 mpv_build="$work/mpv-build"
@@ -55,7 +49,7 @@ fi
 meson compile -C "$mpv_build"
 meson test -C "$mpv_build" --print-errorlogs
 
-producer_dir="$app_repo/experiments/clearkey-cenc-packet-transform"
+producer_dir="$repo/packet-producer"
 cc -std=c11 -O2 -Wall -Wextra -Wpedantic -Werror \
   $(pkg-config --cflags libavformat libavcodec libavutil openssl) \
   "$producer_dir/cenc_transform.c" "$producer_dir/cenc_component_producer.c" \
@@ -92,14 +86,14 @@ copy_deps
 
 grep -a -q RDPKT006 "$stage/libmpv-2.dll"
 grep -a -q YNOIMSC1 "$stage/libmpv-2.dll"
-app_commit=$(git -C "$app_repo" rev-parse HEAD 2>/dev/null || echo working-tree)
+producer_digest=$(sha256sum "$producer_dir"/* "$repo/rustdash_packet_abi.h" | sha256sum | awk '{print $1}')
 cat > "$stage/manifest.json" <<EOF
 {
   "schema": 1,
   "version": "$version",
   "platform": "windows-x64",
   "mpvCommit": "$mpv_commit",
-  "appCommit": "$app_commit",
+  "producerSourceSha256": "$producer_digest",
   "packetAbi": "RDPKT006",
   "subtitleBitmapAbi": "YNOIMSC1",
   "runtime": "ucrt64"

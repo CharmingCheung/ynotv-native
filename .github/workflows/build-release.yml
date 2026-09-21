@@ -13,15 +13,17 @@ jobs:
   macos-arm64:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Read release version
         id: version
         run: echo "version=$(tr -d '[:space:]' < VERSION)" >> "$GITHUB_OUTPUT"
       - name: Install build dependencies
-        run: brew install mpv meson ninja pkg-config
+        run: brew install mpv openssl@3 meson ninja pkg-config
       - name: Build relocatable runtime
+        env:
+          PKG_CONFIG_PATH: /opt/homebrew/opt/openssl@3/lib/pkgconfig
         run: ./scripts/build-macos.sh "${{ steps.version.outputs.version }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: ynotv-native-macos-arm64
           path: |
@@ -31,12 +33,7 @@ jobs:
   windows-x64:
     runs-on: windows-2025
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with:
-          repository: CharmingCheung/ynotv-fork
-          ref: custom_dev
-          path: ynotv-app
+      - uses: actions/checkout@v5
       - name: Read release version
         id: version
         shell: bash
@@ -61,8 +58,8 @@ jobs:
             mingw-w64-ucrt-x86_64-llvm-tools
       - name: Build relocatable runtime
         shell: msys2 {0}
-        run: ./scripts/build-windows.sh "${{ steps.version.outputs.version }}" "$(cygpath -u "$GITHUB_WORKSPACE")/ynotv-app"
-      - uses: actions/upload-artifact@v4
+        run: ./scripts/build-windows.sh "${{ steps.version.outputs.version }}"
+      - uses: actions/upload-artifact@v6
         with:
           name: ynotv-native-windows-x64
           path: |
@@ -75,8 +72,8 @@ jobs:
     needs: [macos-arm64, windows-x64]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v7
         with:
           path: dist
           merge-multiple: true
