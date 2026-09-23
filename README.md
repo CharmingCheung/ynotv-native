@@ -2,7 +2,7 @@
 
 Reproducible source and CI packaging for the patched `libmpv` used by ynoTV's
 Native DASH player. Application code belongs in
-[`CharmingCheung/ynotv-fork`](https://github.com/CharmingCheung/ynotv-fork) (Not publish yet);
+[`CharmingCheung/ynotv-fork`](https://github.com/CharmingCheung/ynotv-fork);
 this repository owns only the native patch, its regression fixtures, and the
 versioned runtime artifacts consumed by `pnpm dev`.
 
